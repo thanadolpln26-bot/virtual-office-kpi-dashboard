@@ -1,2 +1,206 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Virtual Office KPI Monitor</title><style>body{margin:0;background:#07130e;color:#eef8ee;font-family:system-ui,sans-serif}main{max-width:1400px;margin:auto;padding:24px}.hero{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:center}.hero img{width:100%;border-radius:18px;border:1px solid #315c43;box-shadow:0 0 40px #1b6a3a55;animation:float 5s ease-in-out infinite,glow 5s ease-in-out infinite}@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.015)}}@keyframes glow{0%,100%{box-shadow:0 0 40px #1b6a3a55}50%{box-shadow:0 0 60px #2fae5f88}}.panel{background:#0e2117;border:1px solid #315c43;border-radius:16px;padding:18px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.card{background:#132b1c;border:1px solid #2c6543;border-radius:12px;padding:14px}.card b{display:block;color:#9dd9ae;font-size:12px}.card strong{font-size:25px}.rows{display:grid;gap:10px}.row{display:grid;grid-template-columns:1.3fr 2fr 110px 100px;gap:12px;align-items:center;background:#10271a;border:1px solid #245437;border-radius:10px;padding:12px}.bar{height:8px;background:#244632;border-radius:99px;overflow:hidden}.fill{height:100%;background:#64d68a}.src{color:#a4bdaa;font-size:12px;margin-top:18px}a{color:#b4eec2}@media(max-width:800px){.hero{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr}}
-</style></head><body><main><div class="hero"><div><h1>VAMAX Virtual Office</h1><p>Executive KPI Monitoring Dashboard</p><p style="color:#9dd9ae">ภาพสำนักงาน 3D + สถานะแผนกจาก Google Sheet</p></div><img src="./virtual-office.png" alt="Virtual Office 3D"></div><div class="kpis"><div class="card"><b>งานที่บันทึกวันนี้</b><strong>4</strong></div><div class="card"><b>กำลังทำ</b><strong>3</strong></div><div class="card"><b>เสร็จแล้ว</b><strong>0</strong></div><div class="card"><b>ความคืบหน้ารวม</b><strong>45%</strong></div></div><section class="panel"><h2>สถานะแผนก</h2><div class="rows"><div class="row"><b>วิจัยและตรวจสอบแหล่งข้อมูล</b><div class="bar"><div class="fill" style="width:67%"></div></div><span>67%</span><span>กำลังทำ</span></div><div class="row"><b>ประเมินผลและ QC</b><div class="bar"><div class="fill" style="width:40%"></div></div><span>40%</span><span>กำลังทำ</span></div><div class="row"><b>สร้างและดูแลสกิล</b><div class="bar"><div class="fill" style="width:0%"></div></div><span>0%</span><span>กำลังทำ</span></div><div class="row"><b>ปล่อยงานและปฏิบัติการ</b><div class="bar"><div class="fill" style="width:0%"></div></div><span>0%</span><span>ยังไม่เริ่ม</span></div></div><div class="src">Source snapshot: Google Sheet <a href="https://docs.google.com/spreadsheets/d/1dVTM2-rJSKUFqtfUjck2Hoh8f00GqJ9RQA48ekoKn2I/edit?gid=974378534" target="_blank">บันทึกงานรายวัน</a> · Business timezone: Asia/Bangkok · สถานะระบบ: SNAPSHOT / รอเชื่อม API สด</div></section></main></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Virtual Office KPI Monitor</title>
+<style>
+:root{
+  --bg:#07100a;
+  --panel:#0d1a12;
+  --panel2:#101f16;
+  --border:#1e3f2a;
+  --border-soft:#16301f;
+  --text:#eef8ee;
+  --muted:#8fae9a;
+  --green:#5fe092;
+  --green-dim:#2c6543;
+  --gold:#e8c874;
+  --gold-dim:#a98a44;
+  --danger:#e8975a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(1200px 600px at 15% -10%,#123a24 0%,transparent 60%),
+  radial-gradient(900px 500px at 110% 10%,#1a2f1f 0%,transparent 55%),
+  var(--bg);
+  color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  min-height:100vh;
+}
+main{max-width:1420px;margin:auto;padding:40px 24px 60px}
+.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-weight:600;margin:0 0 6px}
+.topline{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+h1{margin:0;font-size:38px;font-weight:700;letter-spacing:-.01em}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);border:1px solid var(--border);background:var(--panel);padding:7px 14px;border-radius:99px}
+.pill .dot{width:7px;height:7px;border-radius:99px;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.hero{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--border);
+  background:linear-gradient(180deg,#0c1a11,#0a140d);box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+.hero-inner{position:relative}
+.hero img{display:block;width:100%;height:auto;
+  animation:float 6s ease-in-out infinite;
+  transform-origin:center}
+@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-9px) scale(1.012)}}
+.hero-scrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(6,14,9,.92) 100%);pointer-events:none}
+.hero-caption{position:absolute;left:22px;right:22px;bottom:18px;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.hero-caption h2{margin:0;font-size:22px;font-weight:700}
+.hero-caption p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.hero-caption .meta{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-dim);text-align:right}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0}
+.card{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px 20px;overflow:hidden;transition:transform .2s,border-color .2s}
+.card:hover{transform:translateY(-2px);border-color:var(--green-dim)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--green),var(--gold))}
+.card b{display:block;color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.card strong{display:block;font-size:30px;margin-top:6px;font-weight:700;letter-spacing:-.01em}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px;margin-top:22px}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.panel-head h2{margin:0;font-size:20px}
+.panel-head span{font-size:12px;color:var(--muted)}
+
+.grid-dept{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.dept{background:var(--panel2);border:1px solid var(--border-soft);border-radius:14px;padding:16px 18px;transition:transform .2s,border-color .2s}
+.dept:hover{transform:translateY(-2px);border-color:var(--green-dim)}
+.dept-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.dept-name{font-weight:700;font-size:15px}
+.dept-code{font-size:11px;color:var(--gold-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+.sid{font-size:11px;color:var(--muted);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-all;margin:8px 0}
+.dept-kpi{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin:10px 0 6px;color:var(--text)}
+.bar{height:7px;background:#1a3323;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:linear-gradient(90deg,var(--green-dim),var(--green));border-radius:99px}
+.status-row{display:flex;justify-content:flex-end;margin-top:10px}
+.tag{padding:5px 11px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.tag.active{background:rgba(95,224,146,.14);color:var(--green);border:1px solid rgba(95,224,146,.35)}
+.tag.pending{background:rgba(232,151,90,.12);color:var(--danger);border:1px solid rgba(232,151,90,.32)}
+.tag.unknown{background:rgba(232,200,116,.1);color:var(--gold);border:1px solid rgba(232,200,116,.3)}
+
+.footer-note{margin-top:22px;padding:14px 18px;border-radius:12px;border:1px solid var(--border-soft);background:var(--panel2);
+  font-size:12px;color:var(--muted);letter-spacing:.02em}
+.footer-note a{color:var(--gold)}
+
+@media(max-width:800px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+<main>
+  <div class="topline">
+    <div>
+      <p class="eyebrow">VAMAX AGRI-TECH · ระบบผลผลิตพูดได้</p>
+      <h1>VAMAX Virtual Office</h1>
+    </div>
+    <span class="pill"><span class="dot"></span>Dashboard preview · Live snapshot</span>
+  </div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <img src="./virtual-office.png" alt="Virtual Office 3D">
+      <div class="hero-scrim"></div>
+      <div class="hero-caption">
+        <div>
+          <h2>Virtual Office 3D · Department Registry</h2>
+          <p>ภาพรวมสำนักงานเสมือนและสถานะ KPI ของแต่ละแผนกแบบเรียลไทม์</p>
+        </div>
+        <div class="meta">Asia/Bangkok<br>Presentation layer only</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="card"><b>งานที่บันทึกวันนี้</b><strong>4</strong></div>
+    <div class="card"><b>กำลังทำ</b><strong>3</strong></div>
+    <div class="card"><b>เสร็จแล้ว</b><strong>0</strong></div>
+    <div class="card"><b>ความคืบหน้ารวม</b><strong>45%</strong></div>
+  </div>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>ทะเบียนแผนกและ KPI</h2>
+      <span>Canonical registry · 7 active rooms</span>
+    </div>
+    <div class="grid-dept">
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">วิจัยและตรวจสอบแหล่งข้อมูล</div><div class="dept-code">RES</div></div>
+        </div>
+        <div class="sid">01a00e71-d50d-7af1-9752-8d0d298f29d1</div>
+        <div class="dept-kpi"><span>20/30 งาน</span><span>67%</span></div>
+        <div class="bar"><div class="fill" style="width:67%"></div></div>
+        <div class="status-row"><span class="tag active">กำลังทำ</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">ประเมินผลและ QC</div><div class="dept-code">QC</div></div>
+        </div>
+        <div class="sid">01a00e71-ddf5-7fe0-9a55-813ce7fd975c</div>
+        <div class="dept-kpi"><span>12/30 งาน</span><span>40%</span></div>
+        <div class="bar"><div class="fill" style="width:40%"></div></div>
+        <div class="status-row"><span class="tag active">กำลังทำ</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">สร้างและดูแลสกิล</div><div class="dept-code">SKL</div></div>
+        </div>
+        <div class="sid">01a00e71-d7b1-7b70-ad9e-e0ff97a06c22</div>
+        <div class="dept-kpi"><span>0/1 งาน</span><span>0%</span></div>
+        <div class="bar"><div class="fill" style="width:0%"></div></div>
+        <div class="status-row"><span class="tag active">กำลังทำ</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">ปล่อยงานและปฏิบัติการ</div><div class="dept-code">OPS</div></div>
+        </div>
+        <div class="sid">01a00e71-e461-72b0-b7aa-35581dc33cea</div>
+        <div class="dept-kpi"><span>0/1 งาน</span><span>0%</span></div>
+        <div class="bar"><div class="fill" style="width:0%"></div></div>
+        <div class="status-row"><span class="tag pending">ยังไม่เริ่ม</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">วางระบบและประสานงาน</div><div class="dept-code">ORC</div></div>
+        </div>
+        <div class="sid">01a00e71-d66e-7042-8bec-91b61467ede1</div>
+        <div class="dept-kpi"><span>รอ KPI</span><span>UNKNOWN</span></div>
+        <div class="bar"><div class="fill" style="width:0%"></div></div>
+        <div class="status-row"><span class="tag unknown">SOURCE_REQUIRED</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">เครื่องมือและ MCP</div><div class="dept-code">TOOL</div></div>
+        </div>
+        <div class="sid">01a00e71-d3ca-7e71-92ab-deceac1ced03</div>
+        <div class="dept-kpi"><span>รอ KPI</span><span>UNKNOWN</span></div>
+        <div class="bar"><div class="fill" style="width:0%"></div></div>
+        <div class="status-row"><span class="tag unknown">SOURCE_REQUIRED</span></div>
+      </div>
+
+      <div class="dept">
+        <div class="dept-top">
+          <div><div class="dept-name">ความปลอดภัยและซัพพลายเชน</div><div class="dept-code">SEC</div></div>
+        </div>
+        <div class="sid">01a00e71-dab2-77b3-a4e6-f521441a6456</div>
+        <div class="dept-kpi"><span>รอ KPI</span><span>UNKNOWN</span></div>
+        <div class="bar"><div class="fill" style="width:0%"></div></div>
+        <div class="status-row"><span class="tag unknown">SOURCE_REQUIRED</span></div>
+      </div>
+
+    </div>
+
+    <div class="footer-note">
+      KPI source: <a href="https://docs.google.com/spreadsheets/d/1dVTM2-rJSKUFqtfUjck2Hoh8f00GqJ9RQA48ekoKn2I/edit?gid=974378534" target="_blank">Google Sheet บันทึกงานรายวัน</a>
+      · ห้ามนับ UNKNOWN เป็นศูนย์ · SNAPSHOT / รอเชื่อม API สด
+    </div>
+  </section>
+</main>
+</body>
+</html>
